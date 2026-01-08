@@ -40,6 +40,29 @@ feature = st.sidebar.radio(
     ]
 )
 
+# 🔹 Multilingual Support (ADDED)
+language = st.sidebar.selectbox(
+    "Select Output Language",
+    [
+        "English",
+        "Hindi",
+        "Marathi",
+        "Tamil",
+        "Telugu",
+        "Kannada",
+        "Malayalam",
+        "Bengali",
+        "Gujarati",
+        "Punjabi",
+        "Spanish",
+        "French",
+        "German",
+        "Japanese",
+        "Korean",
+        "Chinese"
+    ]
+)
+
 user_prompt = st.text_area(
     "Enter your idea / requirement:",
     height=160,
@@ -49,11 +72,15 @@ user_prompt = st.text_area(
 generate = st.button("🚀 Generate Agent Output")
 
 # ------------------ PROMPT ENGINE ------------------
-def build_prompt(feature, user_input):
-    base = "You are GameMaster AI, an expert game designer and game AI architect.\n\n"
+def build_prompt(feature, user_input, language):
+    base = f"""
+You are GameMaster AI, an expert game designer and game AI architect.
+Generate the output strictly in **{language} language**.
+Ensure clarity, structure, and professional game development terminology.
+"""
 
     prompts = {
-        "Game Concept Generator": f"""
+        "Game Concept Generator": """
 Create a complete game concept including:
 - Genre
 - Core gameplay loop
@@ -61,35 +88,35 @@ Create a complete game concept including:
 - Unique mechanics
 - Target audience
 """,
-        "Level & Environment Designer": f"""
+        "Level & Environment Designer": """
 Design a detailed game level including:
 - Environment & terrain
 - Player challenges
 - Enemy placement
 - Rewards & progression
 """,
-        "NPC Behavior Designer": f"""
+        "NPC Behavior Designer": """
 Create NPC behavior logic including:
 - NPC role
 - Decision rules
 - Emotional states
 - Behavior tree (pseudo-code)
 """,
-        "Game Strategy Assistant": f"""
+        "Game Strategy Assistant": """
 Analyze and improve gameplay strategy including:
 - Balance fixes
 - Player engagement
 - Difficulty tuning
 - Retention mechanics
 """,
-        "Dialogue & Story Scripting": f"""
+        "Dialogue & Story Scripting": """
 Write immersive game narrative including:
 - Characters
 - Quests
 - Branching dialogue
 - Story arcs
 """,
-        "Avatar Creation for Games": f"""
+        "Avatar Creation for Games": """
 Design a game-ready avatar including:
 - Visual appearance
 - Personality traits
@@ -97,7 +124,7 @@ Design a game-ready avatar including:
 - Animation style
 - Game engine notes (Unity / Unreal)
 """,
-        "Game Animation Creation": f"""
+        "Game Animation Creation": """
 Create animation design including:
 - Animation type (idle, walk, combat, emote)
 - Keyframes description
@@ -106,14 +133,22 @@ Create animation design including:
 """
     }
 
-    return base + prompts[feature] + f"\n\nUser Input:\n{user_input}"
+    return f"""
+{base}
+
+Task:
+{prompts[feature]}
+
+User Input:
+{user_input}
+"""
 
 # ------------------ OPENAI CALL ------------------
 def generate_response(prompt):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a professional game development AI."},
+            {"role": "system", "content": "You are a professional game development AI agent."},
             {"role": "user", "content": prompt}
         ],
         temperature=0.8
@@ -121,10 +156,10 @@ def generate_response(prompt):
     return response.choices[0].message.content
 
 # ------------------ FILE SAVE ------------------
-def save_output(feature, content):
+def save_output(feature, content, language):
     os.makedirs("outputs", exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"outputs/{feature.replace(' ', '_')}_{timestamp}.txt"
+    filename = f"outputs/{feature.replace(' ', '_')}_{language}_{timestamp}.txt"
     with open(filename, "w", encoding="utf-8") as f:
         f.write(content)
     return filename
@@ -135,13 +170,13 @@ if generate:
         st.warning("⚠️ Please enter a prompt.")
     else:
         with st.spinner("GameMaster AI is working... 🎮"):
-            final_prompt = build_prompt(feature, user_prompt)
+            final_prompt = build_prompt(feature, user_prompt, language)
             output = generate_response(final_prompt)
 
         # Save file automatically
-        file_path = save_output(feature, output)
+        file_path = save_output(feature, output, language)
 
-        st.subheader("🧠 Agent Output")
+        st.subheader(f"🧠 Agent Output ({language})")
         st.markdown(output)
 
         # Auto-ready download
