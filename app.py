@@ -146,7 +146,7 @@ User Input:
 # ------------------ OPENAI CALL ------------------
 def generate_response(prompt):
     response = client.chat.completions.create(
-        model="gpt-5.2",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You are a professional game development AI agent."},
             {"role": "user", "content": prompt}
