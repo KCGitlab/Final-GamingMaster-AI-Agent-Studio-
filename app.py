@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 from datetime import datetime
 import os
-
+st.cache_resource.clear()
 # ------------------ PAGE CONFIG ------------------
 st.set_page_config(
     page_title="GameMaster AI 🎮",
